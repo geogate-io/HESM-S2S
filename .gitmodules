@@ -1,0 +1,8 @@
+[submodule "src/MOM6"]
+	path = src/MOM6
+	url = https://github.com/NCAR/MOM6
+	branch = dev/ncar
+[submodule "src/GeoGate"]
+	path = src/GeoGate
+	url = https://github.com/geogate-io/GeoGate
+	branch = feature/export
