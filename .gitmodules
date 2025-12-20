@@ -1,8 +1,12 @@
 [submodule "src/MOM6"]
-	path = src/MOM6
+	path = src/MOM6_interface/MOM6
 	url = https://github.com/NCAR/MOM6
 	branch = dev/ncar
 [submodule "src/GeoGate"]
 	path = src/GeoGate
 	url = https://github.com/geogate-io/GeoGate
 	branch = feature/export
+[submodule "src/CDEPS"]
+	path = src/CDEPS
+	url = https://github.com/geogate-io/CDEPS
+	branch = feature/build_fix
