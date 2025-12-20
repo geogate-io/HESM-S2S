@@ -1,5 +1,5 @@
 #!/bin/bash
-# Main script to build application DLROMS: [CDEPS, GeoGate, ROMS]
+# Main script to build application DLROMS: [CDEPS, GeoGate, MOM6]
 # -DDEBUG=ON can be passed to GeoGate build_args to enable debugging
 
 # Load environment
