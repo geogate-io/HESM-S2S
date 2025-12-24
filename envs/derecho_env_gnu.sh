@@ -27,4 +27,7 @@ export PIO_C_LIBRARY=${PIO_C_PATH}/lib
 export PIO_C_INCLUDE_DIR=${PIO_C_PATH}/include
 export PIO_Fortran_LIBRARY=${PIO_Fortran_PATH}/lib
 export PIO_Fortran_INCLUDE_DIR=${PIO_Fortran_PATH}/include
+
+module use -a /glade/work/epicufsrt/contrib/spack-stack/derecho/spack-stack-1.9.2/envs/ue-gcc-12.2.0/install/modulefiles/cray-mpich/8.1.27-swca2sj/gcc/12.2.0/
+module load fms/2024.02
 module li
