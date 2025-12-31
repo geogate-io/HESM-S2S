@@ -1,5 +1,5 @@
 #!/bin/bash
-# Main script to build application DLROMS: [CDEPS, GeoGate, MOM6]
+# Main script to build application DLROMS: [CDEPS, GeoGate, MOM6, CICE6, CMEPS]
 # -DDEBUG=ON can be passed to GeoGate build_args to enable debugging
 
 # Load environment
@@ -23,18 +23,6 @@ echo "    build_type: cmake.external" >> esmxBuild.yaml
 echo "    build_args: \"-DDISABLE_FoX=ON -DCPRGNU=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
 echo "    fort_module: cdeps_datm_comp.mod" >> esmxBuild.yaml
 echo "    libraries: datm dshr streams cdeps_share" >> esmxBuild.yaml
-#echo "  dice:" >> esmxBuild.yaml
-#echo "    source_dir: src/CDEPS" >> esmxBuild.yaml
-#echo "    build_type: cmake.external" >> esmxBuild.yaml
-#echo "    build_args: \"-DDISABLE_FoX=ON -DCPRGNU=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
-#echo "    fort_module: cdeps_dice_comp.mod" >> esmxBuild.yaml
-#echo "    libraries: dice dshr streams cdeps_share" >> esmxBuild.yaml
-#echo "  drof:" >> esmxBuild.yaml
-#echo "    source_dir: src/CDEPS" >> esmxBuild.yaml
-#echo "    build_type: cmake.external" >> esmxBuild.yaml
-#echo "    build_args: \"-DDISABLE_FoX=ON -DCPRGNU=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
-#echo "    fort_module: cdeps_drof_comp.mod" >> esmxBuild.yaml
-#echo "    libraries: drof dshr streams cdeps_share" >> esmxBuild.yaml
 echo "  cice6:" >> esmxBuild.yaml
 echo "    source_dir: src/CICE_interface" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
