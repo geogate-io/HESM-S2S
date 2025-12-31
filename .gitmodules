@@ -10,3 +10,10 @@
 	path = src/CDEPS
 	url = https://github.com/geogate-io/CDEPS
 	branch = feature/build_fix
+[submodule "src/CMEPS"]
+	path = src/CMEPS
+	url = https://github.com/geogate-io/CMEPS
+        branch = feature/esmx
+[submodule "src/CICE_interface/CICE"]
+	path = src/CICE_interface/CICE
+	url = https://github.com/NOAA-EMC/CICE.git
