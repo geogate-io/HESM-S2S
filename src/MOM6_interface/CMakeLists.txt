@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.19)
 project(mom6 LANGUAGES Fortran)
 
+# GNU Compiler options
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -fbacktrace")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Waliasing -fcray-pointer -fconvert=big-endian -ffree-line-length-none -fno-range-check -fbacktrace")
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -I/glade/work/turuncu/ML/runs/cmom.jra.gnu/bld/gnu/mpich/nodebug/nothreads/FMS")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -I/glade/work/epicufsrt/contrib/spack-stack/derecho/spack-stack-1.9.2/envs/ue-gcc-12.2.0/install/gcc/12.2.0/fms-2024.02-k6pfcd2/include_r8")
 set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
 list(APPEND MOM6_SHARE_DEFS "CPRGNU")
 
@@ -28,7 +29,7 @@ target_include_directories(mom6_obj PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BIN
 target_include_directories(mom6_obj PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MOM6/config_src/memory/dynamic_nonsymmetric>)
 target_include_directories(mom6_obj PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MOM6/src/framework>)
 target_include_directories(mom6_obj PRIVATE ${NetCDF_Fortran_INCLUDE_DIRS})
-target_link_libraries(mom6_obj PUBLIC fms esmf stochastic_physics NetCDF::NetCDF_Fortran)
+target_link_libraries(mom6_obj PUBLIC fms_r8 esmf stochastic_physics NetCDF::NetCDF_Fortran)
 
 # NUOPC cap
 add_library(mom6_nuopc_obj OBJECT ${mom6_nuopc_src_files})
@@ -38,7 +39,7 @@ target_include_directories(mom6_nuopc_obj PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRE
 target_include_directories(mom6_nuopc_obj PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>)
 target_compile_definitions(mom6_nuopc_obj PRIVATE ${MOM6_SHARE_DEFS})
 target_include_directories(mom6_nuopc_obj PRIVATE ${ESMF_F90COMPILEPATHS})
-target_link_libraries(mom6_nuopc_obj PUBLIC mom6_obj fms esmf stochastic_physics)
+target_link_libraries(mom6_nuopc_obj PUBLIC mom6_obj fms_r8 esmf stochastic_physics)
 
 # Create dummy source to prevent No SOURCES given to target error
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/mom6_dummy.F90" "subroutine mom6_dummy()\nend subroutine mom6_dummy\n")
