@@ -31,11 +31,7 @@ if(NOT ESMF_FOUND)
 endif()
 
 # Special cases for compile time
-if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  if(FASTER)
-    set_source_files_properties(CICE/icepack/columnphysics/icepack_shortwave_data.F90 APPEND_STRING PROPERTY COMPILE_FLAGS " -O2")
-  endif()
-endif()
+set_source_files_properties(CICE/icepack/columnphysics/icepack_shortwave_data.F90 APPEND_STRING PROPERTY COMPILE_FLAGS " -O0")
 
 # Collect source files for library
 list(APPEND lib_src_files
