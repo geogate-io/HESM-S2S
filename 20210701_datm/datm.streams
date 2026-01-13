@@ -1,0 +1,121 @@
+stream_info:               era5.01 era5.02 era5.03 era5.04 era5.05 era5.06 era5.07 era5.08
+
+taxmode01:                 limit
+mapalgo01:                 redist
+tInterpAlgo01:             linear
+readMode01:                single
+dtlimit01:                 1.5
+stream_offset01:           0
+yearFirst01:               2021
+yearLast01:                2023
+yearAlign01:               2021 
+stream_vectors01:          null
+stream_mesh_file01:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname01:      null
+stream_data_files01:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_msl_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_msl_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_msl_2023_merged.nc"
+stream_data_variables01:   "msl Sa_pslv" "msl Sa_pbot"
+
+taxmode02:                 limit
+mapalgo02:                 redist
+tInterpAlgo02:             linear
+readMode02:                single
+dtlimit02:                 1.5
+stream_offset02:           0
+yearFirst02:               2021
+yearLast02:                2023
+yearAlign02:               2021
+stream_vectors02:          null
+stream_mesh_file02:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname02:      null
+stream_data_files02:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_t2m_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_t2m_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_t2m_2023_merged.nc"
+stream_data_variables02:   "t2m Sa_t2m" "t2m Sa_tbot"
+
+taxmode03:                 limit
+mapalgo03:                 redist
+tInterpAlgo03:             coszen 
+readMode03:                single
+dtlimit03:                 1.5
+stream_offset03:           0
+yearFirst03:               2021
+yearLast03:                2023
+yearAlign03:               2021
+stream_vectors03:          null
+stream_mesh_file03:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname03:      null
+stream_data_files03:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_q2_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_q2_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_q2_2023_merged.nc"
+stream_data_variables03:   "q2 Sa_q2m" "q2 Sa_shum"
+
+taxmode04:                 limit
+mapalgo04:                 redist
+tInterpAlgo04:             linear
+readMode04:                single
+dtlimit04:                 1.5
+stream_offset04:           0
+yearFirst04:               2021
+yearLast04:                2023
+yearAlign04:               2021
+stream_vectors04:          null
+stream_mesh_file04:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname04:      null
+stream_data_files04:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_tp_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_tp_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_tp_2023_merged.nc"
+stream_data_variables04:   "tp Faxa_rain"
+
+taxmode05:                 limit
+mapalgo05:                 redist
+tInterpAlgo05:             linear
+readMode05:                single
+dtlimit05:                 1.5
+stream_offset05:           0
+yearFirst05:               2021
+yearLast05:                2023
+yearAlign05:               2021
+stream_vectors05:          null
+stream_mesh_file05:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname05:      null
+stream_data_files05:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_u10_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_u10_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_u10_2023_merged.nc"
+stream_data_variables05:   "u10 Sa_u10m" "u10 Sa_u"
+
+taxmode06:                 limit
+mapalgo06:                 redist
+tInterpAlgo06:             linear
+readMode06:                single
+dtlimit06:                 1.5
+stream_offset06:           0
+yearFirst06:               2021
+yearLast06:                2023
+yearAlign06:               2021
+stream_vectors06:          null
+stream_mesh_file06:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname06:      null
+stream_data_files06:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_v10_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_v10_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_v10_2023_merged.nc"
+stream_data_variables06:   "v10 Sa_v10m" "v10 Sa_v"
+
+taxmode07:                 limit
+mapalgo07:                 redist
+tInterpAlgo07:             linear
+readMode07:                single
+dtlimit07:                 1.5
+stream_offset07:           0
+yearFirst07:               2021
+yearLast07:                2023
+yearAlign07:               2021
+stream_vectors07:          null
+stream_mesh_file07:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname07:      null
+stream_data_files07:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_strd_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_strd_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_strd_2023_merged.nc"
+stream_data_variables07:   "strd Faxa_lwdn"
+
+taxmode08:                 limit
+mapalgo08:                 redist
+tInterpAlgo08:             coszen
+readMode08:                single
+dtlimit08:                 1.5
+stream_offset08:           0
+yearFirst08:               2021
+yearLast08:                2023
+yearAlign08:               2021
+stream_vectors08:          null
+stream_mesh_file08:        Mesh/era5_mesh_cdf5.nc
+stream_lev_dimname08:      null
+stream_data_files08:       "/glade/derecho/scratch/turuncu/data/Data_mom6/data_ssrd_2021_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_ssrd_2022_merged.nc" "/glade/derecho/scratch/turuncu/data/Data_mom6/data_ssrd_2023_merged.nc"
+stream_data_variables08:   "ssrd Faxa_swdn"
