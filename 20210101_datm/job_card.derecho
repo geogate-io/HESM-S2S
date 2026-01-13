@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #PBS -o out
 #PBS -e err
-#PBS -N dlmom
+#PBS -N s2s1 
 #PBS -A P93300606
 #PBS -q main 
-#PBS -l select=4:ncpus=80:mpiprocs=80:ompthreads=1
-#PBS -l walltime=00:30:00
+#PBS -l select=7:ncpus=80:mpiprocs=80:ompthreads=1
+#PBS -l walltime=12:00:00
 
 set -eux
 source ../envs/derecho_env_gnu.sh
@@ -23,4 +23,4 @@ export MPICH_COLL_OPT_OFF=1
 sync && sleep 1
 ulimit -s unlimited
 
-mpiexec -n 208 --hostfile $PBS_NODEFILE ../install/bin/esmx_app
+mpiexec -n 560 --hostfile $PBS_NODEFILE ../install/bin/esmx_app

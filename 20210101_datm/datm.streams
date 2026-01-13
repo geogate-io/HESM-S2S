@@ -107,7 +107,7 @@ stream_data_variables07:   "strd Faxa_lwdn"
 
 taxmode08:                 limit
 mapalgo08:                 redist
-tInterpAlgo08:             linear #coszen
+tInterpAlgo08:             linear 
 readMode08:                single
 dtlimit08:                 1.5
 stream_offset08:           0

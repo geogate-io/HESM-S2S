@@ -2,7 +2,7 @@
     days_per_year       = 365
     use_leap_years      = .true.
     year_init           = 2021
-    month_init          = 10
+    month_init          = 01
     day_init            = 01
     sec_init            = 0
     dt                  = 900
@@ -10,7 +10,7 @@
     ndtd                = 1
     runtype             = 'initial'
     runid               = 'unknown'
-    ice_ic              = 'cice_model.res.nc'
+    ice_ic              = '20210101.000000.cice_model.res.nc'
     restart             = .true.
     restart_ext         = .false.
     use_restart_time    = .false.
@@ -49,7 +49,7 @@
     history_deflate     = 0
     history_precision   = 4
     histfreq            = 'm','d','h','1','x'
-    histfreq_n          = 0, 0, 6, 0, 0
+    histfreq_n          = 0, 1, 0, 0, 0
     hist_avg            = .true.
     hist_suffix         = 'x','x','x','x','x'
     history_dir         = './history/'
@@ -98,7 +98,7 @@
 
 &thermo_nml
     kitd              = 1
-    ktherm            = 1
+    ktherm            = 2
     conduct           = 'MU71'
     a_rapid_mode      =  0.5e-3
     Rac_rapid_mode    =    10.0
@@ -181,11 +181,11 @@
 /
 
 &domain_nml
-    nprocs            = 48
+    nprocs            = 48 !288 !96 !48
     nx_global         = 1440
     ny_global         = 1080
     block_size_x      = 60
-    block_size_y      = 540
+    block_size_y      = 540 !90 !270 !540
     max_blocks        = -1
     processor_shape   = 'slenderX2'
     distribution_type = 'cartesian'
