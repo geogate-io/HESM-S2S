@@ -1,0 +1,27 @@
+#!/bin/bash -l
+#PBS -o out
+#PBS -e err
+#PBS -N s2s10a 
+#PBS -A P93300606
+#PBS -q hybrid
+#PBS -l select=1:ncpus=1:mpiprocs=1:ompthreads=1:ngpus=1:gpu_type=a100+7:ncpus=80:mpiprocs=80:ompthreads=1
+#PBS -l walltime=12:00:00
+
+set -eux
+source ../envs/derecho_env_gnu.sh
+set +x
+
+export MPI_TYPE_DEPTH=20
+export OMP_STACKSIZE=512M
+export OMP_NUM_THREADS=1
+export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
+export ESMF_RUNTIME_PROFILE=ON
+export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
+export MPICH_COLL_OPT_OFF=1
+export MPICH_OFI_SKIP_NIC_SYMMETRY_TEST=1
+
+# Avoid job errors because of filesystem synchronization delays
+sync && sleep 1
+ulimit -s unlimited
+
+mpiexec -n 561 --hostfile $PBS_NODEFILE ../install/bin/esmx_app
