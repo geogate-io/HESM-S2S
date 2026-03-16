@@ -6,6 +6,7 @@ The HESM-S2S modeling system is a hybrid modeling application that combines a AI
 
 The initial configuration is based on UFS WM `datm_cdeps_mx025_cfsr` regression test (RT).
 
+<img width="694" height="903" alt="Fig01" src="https://github.com/user-attachments/assets/b753112b-4304-4df8-9f2b-c693ae5ca026" />
 
 ## Usage
 
