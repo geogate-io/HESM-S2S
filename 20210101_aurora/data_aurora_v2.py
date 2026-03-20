@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 from datetime import datetime, timedelta
-#from conduit import Node
+from conduit import Node
 
 # Functions
 def find_closest_6h_interval(time):
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # Arguments
     nx_atm = 1440
     ny_atm = 721 # south pole is added to prediction
-    debug = True 
+    debug = False 
     output_path = './predictions'
     perform_temporal_interpolation = True 
     temporal_interpolation_method = "linear"
@@ -44,12 +44,12 @@ if __name__ == "__main__":
     # Set epoch date
     epoch_date = pd.Timestamp("1970-01-01")
 
-    # Set model time, hardcoded for testing
-    model_time_str = "2021-01-01T00:00:00"
-    model_time_str = "2021-01-01T05:55:00"
-    model_time_str = "2021-01-01T06:00:00"
-    model_time_str = "2021-01-01T12:00:00"
-    #model_time_str = "2021-01-01T12:30:00"
+    # Access to channel
+    # Ocean model data on atmospheric model grid/mesh for "import_on_export_grid"
+    # Use "import" to access data on the ocean model grid/mesh
+    my_channel_atm = my_node["channels/{}/{}".format("export", "atm")]
+    my_channel_ocn = my_node["channels/{}/{}".format("import_on_export_grid", "ocn")]
+    model_time_str = my_node['state/time_str'] # e.g., "2011-08-27T06:00:00"
     model_time = datetime.strptime(model_time_str, "%Y-%m-%dT%H:%M:%S")
 
     # Find lower and upper bound or requested time
@@ -159,6 +159,26 @@ if __name__ == "__main__":
         data_path = generic_settings["data_path"]
         if has_import:
             print("*** Two-way coupling enabled ***", flush=True)
+
+            # Get variable and land-sea mask on atmospheric model grid/mesh from the channel
+            sst = my_channel_ocn['data/fields/sea_surface_temperature/values'].reshape((ny_atm,nx_atm))
+            print(f"SST shape: {np.shape(sst)}, min: {np.min(sst)}, max: {np.max(sst)}", flush=True)
+            lsm = my_channel_ocn['data/fields/ocean_mask/values'].reshape((ny_atm,nx_atm))
+            # Mask data over land with missing value
+            missing_value = 1.0e20
+            epsilon = 1.0e-20
+            sst = np.where(lsm == 1.0, sst, missing_value)
+            # Create data structure to pass to the dataset
+            import_vars = {
+                "sst": {
+                    "data": sst,
+                    "scale_factor": 1.0,
+                    "add_offset": 273.15,
+                    "missing_value": missing_value
+                }
+            }
+            # Pass import variables to the dataset for two-way coupling
+            dataset = AuroraDataset(data_path, output_path, start_date, end_date, time_delta, variables, import_vars=import_vars)
         else:
             print("*** One-way coupling enabled ***", flush=True)
 
@@ -207,6 +227,11 @@ if __name__ == "__main__":
                 ds['swdn'] = ds['swdn'].clip(min=0.0)
                 ds['swnet'] = ds['swnet'].clip(min=0.0)
 
+                # Split total precipitation as snow and rain based on air temperature and add to dataset
+                # TODO: Add snow to the Aurora model output and remove this post-processing step
+                ds['snow'] = ds['tp'].where(ds['2t'] <= 273.15, other=0.0, drop=False)
+                ds['rain'] = ds['tp'].where(ds['2t'] > 273.15, other=0.0, drop=False)
+
                 # Save predictions to netCDF files
                 ds.to_netcdf(ofile, engine="netcdf4")
 
@@ -222,32 +247,35 @@ if __name__ == "__main__":
     # List of variables used for coupling
     keep_vars = ['10u', '10v', 'msl', '2t', '2q', 'tp', 'lwdn', 'swdn']
 
+    # Find previous prediction or ERA5 data
+    previous_time_str = time_lb.strftime("%Y-%m-%dT%H:%M:%S")
+    file_name = os.path.join(output_path, f"pred_{previous_time_str}.nc")
+    if os.path.exists(file_name):
+        print(f"Found previous prediction {file_name}", flush=True)
+        ds_prev = xr.open_dataset(file_name, engine="netcdf4")
+        ds_prev = ds_prev[keep_vars + ['time', 'rain', 'snow']].drop_vars('rollout_step').isel(batch=0)
+    else:
+        print(f"No previous prediction found for {previous_time_str}! Exiting ...", flush=True)
+        sys.exit(1)
+
     # Perform temporal interpolation to model time, two rollout step is needed to perform: t+0h -> ? -> t+6h
     if perform_temporal_interpolation:
         if model_time > time_lb and model_time < time_ub:
             print(f"Interpolating data using {temporal_interpolation_method} method to model time: {model_time}", flush=True)
 
             # Keep only coupling variables
+            # Do not apply interpolation to rain and snow since they are derived from total precipitation and air temperature, we can calculate them after interpolation
             ds = ds[keep_vars + ['time']].drop_vars('rollout_step').isel(batch=0)
-
-            # Find previous prediction or ERA5 data
-            previous_time_str = time_lb.strftime("%Y-%m-%dT%H:%M:%S")
-            file_name = os.path.join(output_path, f"pred_{previous_time_str}.nc")
-            if os.path.exists(file_name):
-                print(f"Found previous prediction {file_name} to use for temporal interpolation.", flush=True)
-                ds_prev = xr.open_dataset(file_name, engine="netcdf4")
-                ds_prev = ds_prev[keep_vars + ['time']].drop_vars('rollout_step').isel(batch=0)
-            else:
-                file_name = os.path.join(data_path, f"data_{previous_time_str}.nc")
-                print(f"No previous prediction found, using ERA5 data {file_name} for temporal interpolation.", flush=True)
-                ds_prev = xr.open_dataset(file_name, engine="netcdf4")
-                ds_prev = ds_prev[keep_vars + ['time']]
 
             # Merge currrent prediction with previous prediction or ERA5 to perform temporal interpolation if needed
             ds = xr.concat([ds_prev, ds], dim="time", data_vars='all', coords='different', compat='equals')
 
             # Perform temporal interpolation
             ds_interp = ds.interp(time=model_time, method=temporal_interpolation_method)
+
+            # Split total precipitation as snow and rain based on air temperature and add to dataset
+            ds_interp['snow'] = ds_interp['tp'].where(ds_interp['2t'] <= 273.15, other=0.0, drop=False)
+            ds_interp['rain'] = ds_interp['tp'].where(ds_interp['2t'] > 273.15, other=0.0, drop=False)
 
             # Print statistics for debugging
             for var in ds_interp.data_vars:
@@ -261,41 +289,34 @@ if __name__ == "__main__":
             print("No temporal interpolation needed since forecast time matches the model time.", flush=True)
             # Since Aurora output is in float32, we need to convert to float64 to be compatible with GeoGate
             # TODO: Fix this in GeoGate to allow float32
-            ds_interp = ds[keep_vars + ['time']].drop_vars('rollout_step').isel(batch=0).sel(time=model_time).astype(np.float64)
+            ds_interp = ds[keep_vars + ['time', 'rain', 'snow']].drop_vars('rollout_step').isel(batch=0).sel(time=model_time).astype(np.float64)
     else:
-        print("No temporal interpolation requested. Use same prediction for next 6-hours.", flush=True)
+        print("No temporal interpolation requested. Use previous prediction for next 6-hours.", flush=True)
         # Since Aurora output is in float32, we need to convert to float64 to be compatible with GeoGate
         # TODO: Fix this in GeoGate to allow float32
-        ds_interp = ds[keep_vars + ['time']].drop_vars('rollout_step').isel(batch=0).sel(time=model_time).astype(np.float64)
-
-    # Convert interpolated dataset to float64 for compatibility with GeoGate
-    print(ds_interp)
+        ds_interp = ds_prev.astype(np.float64)
 
     # Return Conduit node with data
-    #my_node_return = Node()
-    #my_node_return.update(my_channel_atm)
-    #my_node_return['data/fields/Sa_z/values'] = ds_interp['10u'].values.reshape(-1)*0.0+10.0 # m, constant
-    #my_node_return['data/fields/Sa_u10m/values'] = ds_interp['10u'].values.reshape(-1) # m/s
-    #my_node_return['data/fields/Sa_u/values'] = ds_interp['10u'].values.reshape(-1) # m/s
-    #my_node_return['data/fields/Sa_pslv/values'] = ds_interp['msl'].values.reshape(-1) # Pa
-    #my_node_return['data/fields/Sa_pbot/values'] = ds_interp['msl'].values.reshape(-1) # Pa
-    #my_node_return['data/fields/Sa_t2m/values'] = ds_interp['2t'].values.reshape(-1) # K
-    #my_node_return['data/fields/Sa_tbot/values'] = ds_interp['2t'].values.reshape(-1) # K
-    #my_node_return['data/fields/Sa_v10m/values'] = ds_interp['10v'].values.reshape(-1) # m/s
-    #my_node_return['data/fields/Sa_v/values'] = ds_interp['10v'].values.reshape(-1) # m/s
-    #my_node_return['data/fields/Faxa_rain/values']  = ds_interp['rain'].values.reshape(-1)*1000.0 # m/s to kg/m^2/s 
-    #my_node_return['data/fields/Faxa_snow/values']  = ds_interp['snow'].values.reshape(-1)*1000.0 # m/s to kg/m^2/s 
-    #my_node_return['data/fields/Sa_q2m/values'] = ds_interp['2q'].values.reshape(-1) # kg/kg
-    #my_node_return['data/fields/Sa_shum/values'] = ds_interp['2q'].values.reshape(-1) # kg/kg
-    #my_node_return['data/fields/Faxa_lwdn/values']  = ds_interp['lwdn'].values.reshape(-1) # W/m2
-    #my_node_return['data/fields/Faxa_swdn/values'] = ds_interp['swdn'].values.reshape(-1) # W/m2
-    #my_node_return['data/fields/Faxa_swvdr/values'] = ds_interp['swdn'].values.reshape(-1)*0.28 # W/m2
-    #my_node_return['data/fields/Faxa_swndr/values'] = ds_interp['swdn'].values.reshape(-1)*0.31 # W/m2
-    #my_node_return['data/fields/Faxa_swvdf/values'] = ds_interp['swdn'].values.reshape(-1)*0.24 # W/m2
-    #my_node_return['data/fields/Faxa_swndf/values'] = ds_interp['swdn'].values.reshape(-1)*0.17 # W/m2
-    #if debug:
-    #    my_node_return.save("pred_{}".format(forecast_time_str))
-            
-            
-#.isel(time=0).astype(np.float64)
-#.astype(np.float64) #.drop_vars('time').astype(np.float64)
+    my_node_return = Node()
+    my_node_return.update(my_channel_atm)
+    my_node_return['data/fields/Sa_z/values'] = ds_interp['10u'].values.reshape(-1)*0.0+10.0 # m, constant
+    my_node_return['data/fields/Sa_u10m/values'] = ds_interp['10u'].values.reshape(-1) # m/s
+    my_node_return['data/fields/Sa_u/values'] = ds_interp['10u'].values.reshape(-1) # m/s
+    my_node_return['data/fields/Sa_pslv/values'] = ds_interp['msl'].values.reshape(-1) # Pa
+    my_node_return['data/fields/Sa_pbot/values'] = ds_interp['msl'].values.reshape(-1) # Pa
+    my_node_return['data/fields/Sa_t2m/values'] = ds_interp['2t'].values.reshape(-1) # K
+    my_node_return['data/fields/Sa_tbot/values'] = ds_interp['2t'].values.reshape(-1) # K
+    my_node_return['data/fields/Sa_v10m/values'] = ds_interp['10v'].values.reshape(-1) # m/s
+    my_node_return['data/fields/Sa_v/values'] = ds_interp['10v'].values.reshape(-1) # m/s
+    my_node_return['data/fields/Faxa_rain/values']  = ds_interp['rain'].values.reshape(-1)*1000.0 # m/s to kg/m^2/s 
+    my_node_return['data/fields/Faxa_snow/values']  = ds_interp['snow'].values.reshape(-1)*1000.0 # m/s to kg/m^2/s 
+    my_node_return['data/fields/Sa_q2m/values'] = ds_interp['2q'].values.reshape(-1) # kg/kg
+    my_node_return['data/fields/Sa_shum/values'] = ds_interp['2q'].values.reshape(-1) # kg/kg
+    my_node_return['data/fields/Faxa_lwdn/values']  = ds_interp['lwdn'].values.reshape(-1) # W/m2
+    my_node_return['data/fields/Faxa_swdn/values'] = ds_interp['swdn'].values.reshape(-1) # W/m2
+    my_node_return['data/fields/Faxa_swvdr/values'] = ds_interp['swdn'].values.reshape(-1)*0.28 # W/m2
+    my_node_return['data/fields/Faxa_swndr/values'] = ds_interp['swdn'].values.reshape(-1)*0.31 # W/m2
+    my_node_return['data/fields/Faxa_swvdf/values'] = ds_interp['swdn'].values.reshape(-1)*0.24 # W/m2
+    my_node_return['data/fields/Faxa_swndf/values'] = ds_interp['swdn'].values.reshape(-1)*0.17 # W/m2
+    if debug:
+        my_node_return.save(f"pred_{model_time_str}")
