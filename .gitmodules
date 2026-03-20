@@ -5,7 +5,7 @@
 [submodule "src/GeoGate"]
 	path = src/GeoGate
 	url = https://github.com/geogate-io/GeoGate
-	branch = feature/export
+	branch = main
 [submodule "src/CDEPS"]
 	path = src/CDEPS
 	url = https://github.com/geogate-io/CDEPS
