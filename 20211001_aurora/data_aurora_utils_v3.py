@@ -67,8 +67,6 @@ class AuroraDataset(Dataset):
         # Load datasets
         file_list = []
         ds_list = []
-        file_list_sst = []
-        ds_list_sst = []
         for idx in idxs:
             time_str = self.time_array[idx]
             
@@ -87,7 +85,7 @@ class AuroraDataset(Dataset):
                             "2dt":"d2m", 
                             "swnet": "ssr", 
                             "lwnet": "str", 
-                            "swdn": "ssrd",
+                            "swdn": "ssrd", 
                             "lwdn": "strd"
                         }
                     )
@@ -104,9 +102,24 @@ class AuroraDataset(Dataset):
             # Add dataset to list
             ds_list.append(ds)
 
+        # SST
+        file_list_sst = []
+        ds_list_sst = []
+        for idx in idxs:
+            time_str = self.time_array[idx]
+            file_list_sst.append(os.path.join(self.data_path, f"data_{time_str}.nc"))
+            ds_list_sst.append(xr.open_dataset(file_list_sst[-1], engine="netcdf4"))
+        print(f"Concatenating SST datasets: {file_list_sst}", flush=True)
+        ds_sst = xr.concat(ds_list_sst, dim="time", data_vars='all', coords='different', compat='equals')
+
         # Concatenate datasets along time dimension
         print(f"Concatenating datasets: {file_list}", flush=True)
         ds = xr.concat(ds_list, dim="time", data_vars='all', coords='different', compat='equals')
+
+        # Replace SST
+        #ds.to_netcdf(f'input_{time_str}_before.nc', engine="netcdf4")
+        ds['sst'] = ds_sst['sst']
+        #ds.to_netcdf(f'input_{time_str}_after.nc', engine="netcdf4")
 
         # Check if we have static variables, if not we need to import them from ERA5 data
         if "static" in self.variables.keys():
@@ -123,6 +136,7 @@ class AuroraDataset(Dataset):
         for section in self.variables.keys():
             if section == "surf":
                 for key, val in self.variables[section].items():
+                    # Accumulated variables, convert from per hour to per second
                     surf_vars[key] = torch.from_numpy(ds[val].values[None])
                     # Two-way coupling: check if we need to import variables and update input data
                     if self.import_vars is not None and has_import:

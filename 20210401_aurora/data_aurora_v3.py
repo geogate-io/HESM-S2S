@@ -89,7 +89,7 @@ if __name__ == "__main__":
         from aurora import AuroraPretrained
         from aurora import Batch, Metadata
         from aurora.normalisation import locations, scales
-        from data_aurora_utils_v2 import AuroraDataset, batch_collate_fn, batch_to_dataset, _np
+        from data_aurora_utils_v3 import AuroraDataset, batch_collate_fn, batch_to_dataset, _np
 
         # Print forecast time
         print(f"Making prediction for forecast time: {forecast_time_str}", flush=True)
