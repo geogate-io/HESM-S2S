@@ -1,5 +1,7 @@
 # HESM-S2S: Hybrid Earth System Model for S2S Prediction
 
+[![DOI](https://zenodo.org/badge/1101444353.svg)](https://doi.org/10.5281/zenodo.20019280)
+
 The HESM-S2S modeling system is a hybrid modeling application that combines a AI/ML weather model with MOM6, CICE6, CMEPS and CDEPS to create S2S application.
 
 ## Configuration
