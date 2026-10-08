@@ -16,7 +16,15 @@ module load paraview/5.13.3
 module load conduit/0.9.2
 module load libcatalyst/2.0.0
 
-PYTHON_ENV=/glade/work/turuncu/ML/envs/earth2studio
+PYTHON_ENV=/glade/work/turuncu/ML-2.0/envs/aurora
+# Plain PATH/LD_LIBRARY_PATH prepend rather than `module load conda` +
+# `conda activate`: Lmod's conda module conflicts with the `python`
+# module already loaded above (pulled in by esmf/paraview's own spack
+# stack), and conda activate needs `conda init` to have run in this
+# shell anyway. Python doesn't need conda's shell machinery to find its
+# own site-packages -- that's derived from the interpreter's own install
+# path -- so putting this env's bin first on PATH is enough.
+export PATH=${PYTHON_ENV}/bin:${PATH}
 export LD_LIBRARY_PATH=${PYTHON_ENV}/lib:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH=${HDF5_ROOT}/lib:${LD_LIBRARY_PATH}
 export NETCDF_INCDIR=${NETCDF_FORTRAN_ROOT}/include
