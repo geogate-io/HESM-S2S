@@ -1,9 +1,21 @@
 #!/bin/bash
 # Main script to build application DLROMS: [CDEPS, GeoGate, MOM6, CICE6, CMEPS]
 # -DDEBUG=ON can be passed to GeoGate build_args to enable debugging
+#
+# Usage: ./build.sh [derecho|casper]   (default: derecho)
+set -euo pipefail
+
+PLATFORM=${1:-derecho}
+case "${PLATFORM}" in
+  derecho|casper) ;;
+  *)
+    echo "Usage: $0 [derecho|casper]" >&2
+    exit 1
+    ;;
+esac
 
 # Load environment
-source envs/derecho_env_gnu.sh
+source envs/${PLATFORM}_env_gnu.sh
 
 # Clean old build
 rm -rf build install esmxBuild.yaml
@@ -32,10 +44,10 @@ echo "    libraries: cice" >> esmxBuild.yaml
 echo "  geogate:" >> esmxBuild.yaml
 echo "    source_dir: src/GeoGate/src" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
-echo "    build_args: \"-DGEOGATE_USE_PYTHON=ON -DGEOGATE_USE_CATALYST=ON -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
+echo "    build_args: \"-DGEOGATE_USE_PYTHON=ON -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
 echo "    fort_module: geogate_nuopc.mod" >> esmxBuild.yaml
 echo "    libraries: geogate geogate_io geogate_python geogate_catalyst geogate_shared" >> esmxBuild.yaml
-echo "    link_libraries: conduit catalyst catalyst_fortran python3.12" >> esmxBuild.yaml
+echo "    link_libraries: conduit python3.12" >> esmxBuild.yaml
 echo "  mom6:" >> esmxBuild.yaml
 echo "    source_dir: src/MOM6_interface" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
