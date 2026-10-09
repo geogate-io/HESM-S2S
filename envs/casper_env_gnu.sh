@@ -16,6 +16,12 @@
 #     needed only by GeoGate's GEOGATE_USE_PYTHON plugin) have no Casper
 #     module. Run envs/casper_build_fms.sh and envs/casper_build_conduit.sh
 #     once to build both and generate the Lmod modules loaded below.
+#   - mpi4py: the toolkit's conda env (PYTHON_ENV below) has none, by
+#     design -- Derecho doesn't either, and instead supplements via a
+#     separately spack-built py-mpi4py module linked against cray-mpich.
+#     envs/casper_build_mpi4py.sh does the same here, built against
+#     openmpi/5.0.8 instead, for GeoGate's embedded
+#     `from mpi4py import MPI` (data_aurora_client.py).
 #   - Catalyst/libcatalyst and ParaView are intentionally dropped: build.sh
 #     must be run with -DGEOGATE_USE_CATALYST=OFF on Casper.
 
@@ -37,6 +43,7 @@ module load esmf-mpi/8.9.0
 module use -a /glade/work/turuncu/ML-2.0/envs/casper/modulefiles
 module load fms/2024.02
 module load conduit/0.9.2
+module load mpi4py/4.0.1
 
 PYTHON_ENV=/glade/work/turuncu/ML-2.0/envs/aurora
 # Same reasoning as derecho_env_gnu.sh: a plain PATH/LD_LIBRARY_PATH

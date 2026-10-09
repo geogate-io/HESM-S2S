@@ -2,19 +2,38 @@
 # Main script to build application DLROMS: [CDEPS, GeoGate, MOM6, CICE6, CMEPS]
 # -DDEBUG=ON can be passed to GeoGate build_args to enable debugging
 #
-# Usage: ./build.sh [derecho|casper]   (default: derecho)
+# Usage: ./build.sh [derecho|casper] [release|debug]   (default: derecho release)
+# Debug mode builds cmeps with -DCMAKE_BUILD_TYPE=Debug and passes -g to
+# ESMX_Builder, for a symbolized backtrace on a crash -- slower, only
+# needed while actively debugging.
 set -euo pipefail
 
 PLATFORM=${1:-derecho}
 case "${PLATFORM}" in
   derecho|casper) ;;
   *)
-    echo "Usage: $0 [derecho|casper]" >&2
+    echo "Usage: $0 [derecho|casper] [release|debug]" >&2
     exit 1
     ;;
 esac
 
-echo "Building for platform: ${PLATFORM}"
+BUILD_TYPE=${2:-release}
+case "${BUILD_TYPE}" in
+  release|debug) ;;
+  *)
+    echo "Usage: $0 [derecho|casper] [release|debug]" >&2
+    exit 1
+    ;;
+esac
+
+echo "Building for platform: ${PLATFORM} (${BUILD_TYPE})"
+
+BUILD_TYPE_FLAG=""
+ESMX_BUILDER_DEBUG_FLAG=""
+if [ "${BUILD_TYPE}" = "debug" ]; then
+  BUILD_TYPE_FLAG="-DCMAKE_BUILD_TYPE=Debug "
+  ESMX_BUILDER_DEBUG_FLAG="-g"
+fi
 
 # Load environment
 source envs/${PLATFORM}_env_gnu.sh
@@ -40,19 +59,19 @@ echo "components:" >> esmxBuild.yaml
 echo "  datm:" >> esmxBuild.yaml
 echo "    source_dir: src/CDEPS" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
-echo "    build_args: \"-DDISABLE_FoX=ON -DCPRGNU=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
+echo "    build_args: \"${BUILD_TYPE_FLAG}-DDISABLE_FoX=ON -DCPRGNU=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
 echo "    fort_module: cdeps_datm_comp.mod" >> esmxBuild.yaml
 echo "    libraries: datm dshr streams cdeps_share" >> esmxBuild.yaml
 echo "  cice6:" >> esmxBuild.yaml
 echo "    source_dir: src/CICE_interface" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
-echo "    build_args: \"-DCICE_IO=NetCDF -DCMAKE_Fortran_FLAGS=-I${PWD}/build/datm/share\"" >> esmxBuild.yaml
+echo "    build_args: \"${BUILD_TYPE_FLAG}-DCICE_IO=NetCDF -DCMAKE_Fortran_FLAGS=-I${PWD}/build/datm/share\"" >> esmxBuild.yaml
 echo "    fort_module: ice_comp_nuopc" >> esmxBuild.yaml
 echo "    libraries: cice" >> esmxBuild.yaml
 echo "  geogate:" >> esmxBuild.yaml
 echo "    source_dir: src/GeoGate/src" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
-echo "    build_args: \"-DGEOGATE_USE_PYTHON=ON -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
+echo "    build_args: \"${BUILD_TYPE_FLAG}-DGEOGATE_USE_PYTHON=ON -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
 echo "    fort_module: geogate_nuopc.mod" >> esmxBuild.yaml
 echo "    libraries: geogate geogate_io geogate_python geogate_catalyst geogate_shared" >> esmxBuild.yaml
 echo "    link_paths: ${PYTHON_LIBDIR}" >> esmxBuild.yaml
@@ -60,6 +79,9 @@ echo "    link_libraries: conduit python3.12" >> esmxBuild.yaml
 echo "  mom6:" >> esmxBuild.yaml
 echo "    source_dir: src/MOM6_interface" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
+if [ -n "${BUILD_TYPE_FLAG}" ]; then
+  echo "    build_args: \"${BUILD_TYPE_FLAG}\"" >> esmxBuild.yaml
+fi
 echo "    fort_module: mom_cap_mod" >> esmxBuild.yaml
 echo "    libraries: mom6" >> esmxBuild.yaml
 echo "    link_paths: $FMS_ROOT" >> esmxBuild.yaml
@@ -67,9 +89,9 @@ echo "    link_libraries: fms_r8 cdeps_share" >> esmxBuild.yaml
 echo "  cmeps:" >> esmxBuild.yaml
 echo "    source_dir: src/CMEPS" >> esmxBuild.yaml
 echo "    build_type: cmake.external" >> esmxBuild.yaml
-echo "    build_args: \"-DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/build/datm/share\"" >> esmxBuild.yaml
+echo "    build_args: \"${BUILD_TYPE_FLAG}-DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/build/datm/share\"" >> esmxBuild.yaml
 echo "    fort_module: med.mod" >> esmxBuild.yaml
 echo "    libraries: cmeps cmeps_share" >> esmxBuild.yaml
 
 # Build application
-ESMX_Builder -v --build-jobs=4 --cmake-args="-DCMAKE_Fortran_FLAGS=-I${PWD}/build/cmeps/mediator"
+ESMX_Builder -v ${ESMX_BUILDER_DEBUG_FLAG} --build-jobs=4 --cmake-args="-DCMAKE_Fortran_FLAGS=-I${PWD}/build/cmeps/mediator"
