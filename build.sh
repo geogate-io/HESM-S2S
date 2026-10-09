@@ -14,6 +14,8 @@ case "${PLATFORM}" in
     ;;
 esac
 
+echo "Building for platform: ${PLATFORM}"
+
 # Load environment
 source envs/${PLATFORM}_env_gnu.sh
 
@@ -23,6 +25,12 @@ rm -rf build install esmxBuild.yaml
 # Path for FMS build
 FMS_ROOT=$fms_ROOT
 echo $FMS_ROOT
+
+# Path to libpython*.so for the geogate link step, derived from whichever
+# python3 envs/${PLATFORM}_env_gnu.sh put on PATH (PYTHON_ENV), rather than
+# hardcoding it -- same query GeoGate/Conduit's own SetupPython.cmake uses.
+PYTHON_LIBDIR=$(python3 -c "from sysconfig import get_config_var; print(get_config_var('LIBDIR'))")
+echo $PYTHON_LIBDIR
 
 # Create esmxBuild.yaml
 echo "application:" >> esmxBuild.yaml 
@@ -47,6 +55,7 @@ echo "    build_type: cmake.external" >> esmxBuild.yaml
 echo "    build_args: \"-DGEOGATE_USE_PYTHON=ON -DCMAKE_Fortran_FLAGS=-ffree-line-length-none\"" >> esmxBuild.yaml
 echo "    fort_module: geogate_nuopc.mod" >> esmxBuild.yaml
 echo "    libraries: geogate geogate_io geogate_python geogate_catalyst geogate_shared" >> esmxBuild.yaml
+echo "    link_paths: ${PYTHON_LIBDIR}" >> esmxBuild.yaml
 echo "    link_libraries: conduit python3.12" >> esmxBuild.yaml
 echo "  mom6:" >> esmxBuild.yaml
 echo "    source_dir: src/MOM6_interface" >> esmxBuild.yaml
