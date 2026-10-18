@@ -16,4 +16,5 @@
         branch = feature/esmx
 [submodule "src/CICE_interface/CICE"]
 	path = src/CICE_interface/CICE
-	url = https://github.com/NOAA-EMC/CICE.git
+	url = https://github.com/geogate-io/CICE.git
+	branch = feature/s2s
