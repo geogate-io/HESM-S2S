@@ -92,6 +92,8 @@ echo "    build_type: cmake.external" >> esmxBuild.yaml
 echo "    build_args: \"${BUILD_TYPE_FLAG}-DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/build/datm/share\"" >> esmxBuild.yaml
 echo "    fort_module: med.mod" >> esmxBuild.yaml
 echo "    libraries: cmeps cmeps_share" >> esmxBuild.yaml
+echo "    link_paths: ${ESMF_ROOT}/lib" >> esmxBuild.yaml
+echo "    link_libraries: esmf" >> esmxBuild.yaml
 
 # Build application
 ESMX_Builder -v ${ESMX_BUILDER_DEBUG_FLAG} --build-jobs=4 --cmake-args="-DCMAKE_Fortran_FLAGS=-I${PWD}/build/cmeps/mediator"
