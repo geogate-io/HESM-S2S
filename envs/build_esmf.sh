@@ -89,19 +89,23 @@ module --force purge
 [ -n "${MODULE_NETCDF}" ] && module load "${MODULE_NETCDF}"
 [ -n "${MODULE_PIO}" ] && module load "${MODULE_PIO}"
 
-# This project's own env_gnu.sh scripts already export these directly
-# (derived from NCAR_ROOT_PARALLELIO, the NCAR module tree's own
-# convention on Casper/Derecho) -- only re-derive here as a fallback.
-# NCAR_ROOT_PARALLELIO itself won't exist on a non-NCAR system like TACC
-# Vista, so there, PIO_C_INCLUDE_DIR/PIO_C_LIBRARY must be set explicitly
-# (or source this project's own env_gnu.sh first, once it has a Vista
-# variant) rather than relying on this fallback.
-: "${PIO_C_INCLUDE_DIR:=${NCAR_ROOT_PARALLELIO:-}/include}"
-: "${PIO_C_LIBRARY:=${NCAR_ROOT_PARALLELIO:-}/lib}"
+# Three ways PIO_C_INCLUDE_DIR/PIO_C_LIBRARY can already be set, tried in
+# order: (1) explicitly by the caller; (2) PIO_C_PATH, set by loading the
+# module build_parallelio.sh itself generates (`module use -a
+# ${INSTALL_ROOT}/modulefiles && module load parallelio/<version>` --
+# load that before running this script, on any system, including Vista);
+# (3) NCAR_ROOT_PARALLELIO, the NCAR module tree's own convention on
+# Casper/Derecho (this project's own env_gnu.sh scripts export PIO_C_
+# INCLUDE_DIR/PIO_C_LIBRARY directly from it already). If none of these
+# apply, set PIO_C_INCLUDE_DIR/PIO_C_LIBRARY yourself.
+: "${PIO_C_INCLUDE_DIR:=${PIO_C_PATH:-${NCAR_ROOT_PARALLELIO:-}}/include}"
+: "${PIO_C_LIBRARY:=${PIO_C_PATH:-${NCAR_ROOT_PARALLELIO:-}}/lib}"
 if [ ! -d "${PIO_C_INCLUDE_DIR}" ]; then
   echo "build_esmf.sh: can't find ParallelIO's include dir (${PIO_C_INCLUDE_DIR} doesn't" >&2
-  echo "  exist, and NCAR_ROOT_PARALLELIO is unset) -- set PIO_C_INCLUDE_DIR/PIO_C_LIBRARY" >&2
-  echo "  yourself (there is no NCAR_ROOT_PARALLELIO convention outside NCAR systems)." >&2
+  echo "  exist, and neither PIO_C_PATH nor NCAR_ROOT_PARALLELIO is set) -- load the" >&2
+  echo "  module build_parallelio.sh generated (module use -a \${INSTALL_ROOT}/modulefiles" >&2
+  echo "  && module load parallelio/<version>), or set PIO_C_INCLUDE_DIR/PIO_C_LIBRARY" >&2
+  echo "  yourself." >&2
   exit 1
 fi
 
