@@ -126,6 +126,24 @@ if [ "${PIO_ENABLE_PNETCDF}" = "ON" ]; then
   fi
 fi
 
+# Some systems install netCDF's libraries under lib64/ rather than lib/
+# (confirmed directly on TACC Vista: NetCDF_Fortran_LIBDIR there resolves
+# to .../lib64, found correctly via pkg-config -- but PIO's own piof
+# CMake target links against the bare "netcdff" library name without
+# carrying that pkg-config-derived -L path through to the actual link
+# command, producing "cannot find -lnetcdff" despite the library
+# genuinely existing and being correctly located internally). Rather than
+# depend on PIO's own internal target wiring picking up the right -L,
+# pass both candidate lib dirs explicitly and unconditionally as linker
+# search paths -- harmless if one doesn't exist (the linker just ignores
+# a nonexistent -L), fixes it regardless of which one is real here.
+EXTRA_LINKER_FLAGS=""
+for root in "${NETCDF_C_PATH}" "${NETCDF_FORTRAN_PATH}"; do
+  for libdir in lib lib64; do
+    [ -d "${root}/${libdir}" ] && EXTRA_LINKER_FLAGS="${EXTRA_LINKER_FLAGS} -L${root}/${libdir}"
+  done
+done
+
 rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
@@ -150,6 +168,8 @@ CMAKE_ARGS=(
   -DNetCDF_Fortran_PATH:STRING="${NETCDF_FORTRAN_PATH}"
   -DUSER_CMAKE_MODULE_PATH:STRING="${BUILD_DIR}/CMake_Fortran_utils"
   -DGENF90_PATH:STRING="${PWD}/scripts"
+  -DCMAKE_EXE_LINKER_FLAGS:STRING="${EXTRA_LINKER_FLAGS}"
+  -DCMAKE_SHARED_LINKER_FLAGS:STRING="${EXTRA_LINKER_FLAGS}"
   -DBUILD_SHARED_LIBS:BOOL=ON
   -DPIO_ENABLE_EXAMPLES:BOOL=OFF
   -DPIO_ENABLE_TIMING:BOOL=OFF
