@@ -10,9 +10,9 @@ set -euo pipefail
 
 PLATFORM=${1:-derecho}
 case "${PLATFORM}" in
-  derecho|casper) ;;
+  derecho|casper|vista) ;;
   *)
-    echo "Usage: $0 [derecho|casper] [release|debug]" >&2
+    echo "Usage: $0 [derecho|casper|vista] [release|debug]" >&2
     exit 1
     ;;
 esac
@@ -21,7 +21,7 @@ BUILD_TYPE=${2:-release}
 case "${BUILD_TYPE}" in
   release|debug) ;;
   *)
-    echo "Usage: $0 [derecho|casper] [release|debug]" >&2
+    echo "Usage: $0 [derecho|casper|vista] [release|debug]" >&2
     exit 1
     ;;
 esac
