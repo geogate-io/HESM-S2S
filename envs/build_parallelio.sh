@@ -73,6 +73,7 @@ MODULE_NCARENV=${MODULE_NCARENV-ncarenv/25.10}
 MODULE_GCC=${MODULE_GCC-gcc/14.3.0}
 MODULE_MPI=${MODULE_MPI-openmpi/5.0.8}
 MODULE_CMAKE=${MODULE_CMAKE-cmake/3.31.8}
+MODULE_HDF5=${MODULE_HDF5-hdf5-mpi/1.14.6}
 MODULE_NETCDF=${MODULE_NETCDF-netcdf-mpi/4.9.3}
 BUILD_DIR_ROOT=${BUILD_DIR_ROOT:-/glade/derecho/scratch/$USER/casper_build}
 
@@ -88,21 +89,32 @@ module --force purge
 [ -n "${MODULE_GCC}" ] && module load "${MODULE_GCC}"
 [ -n "${MODULE_MPI}" ] && module load "${MODULE_MPI}"
 [ -n "${MODULE_CMAKE}" ] && module load "${MODULE_CMAKE}"
+# netCDF's netcdf4/parallel support depends on HDF5 -- must load before
+# netcdf-mpi (NCAR's module tree is hierarchical: netcdf-mpi may not even
+# be visible/correctly initialized without hdf5-mpi loaded first, same
+# order this project's own env_gnu.sh scripts always use).
+[ -n "${MODULE_HDF5}" ] && module load "${MODULE_HDF5}"
 [ -n "${MODULE_NETCDF}" ] && module load "${MODULE_NETCDF}"
 if [ "${PIO_ENABLE_PNETCDF}" = "ON" ] && [ -n "${MODULE_PNETCDF}" ]; then
   module load "${MODULE_PNETCDF}"
 fi
 
-# This project's own env_gnu.sh scripts already export NCAR_ROOT_NETCDF
-# after loading netcdf-mpi -- only re-derive here as a fallback. There is
-# no NCAR_ROOT_* convention outside NCAR systems (e.g. Vista), so there
-# NETCDF_C_PATH/NETCDF_FORTRAN_PATH must be set explicitly.
+# nc-config/nf-config ship with netCDF-C/-Fortran itself and work on any
+# system (unlike NCAR_ROOT_NETCDF, which only exists on NCAR's own module
+# tree) -- try those first, then NCAR_ROOT_NETCDF as a secondary hint.
+if [ -z "${NETCDF_C_PATH:-}" ] && command -v nc-config > /dev/null 2>&1; then
+  NETCDF_C_PATH=$(nc-config --prefix)
+fi
+if [ -z "${NETCDF_FORTRAN_PATH:-}" ] && command -v nf-config > /dev/null 2>&1; then
+  NETCDF_FORTRAN_PATH=$(nf-config --prefix)
+fi
 : "${NETCDF_C_PATH:=${NCAR_ROOT_NETCDF:-}}"
 : "${NETCDF_FORTRAN_PATH:=${NCAR_ROOT_NETCDF:-}}"
 if [ ! -d "${NETCDF_C_PATH}" ]; then
-  echo "build_parallelio.sh: can't find netCDF-C (${NETCDF_C_PATH:-<unset>} doesn't exist," >&2
-  echo "  and NCAR_ROOT_NETCDF is unset) -- set NETCDF_C_PATH/NETCDF_FORTRAN_PATH yourself" >&2
-  echo "  (there is no NCAR_ROOT_NETCDF convention outside NCAR systems)." >&2
+  echo "build_parallelio.sh: can't find netCDF-C (nc-config not on PATH, NCAR_ROOT_NETCDF" >&2
+  echo "  unset, and NETCDF_C_PATH=${NETCDF_C_PATH:-<unset>} doesn't exist) -- set" >&2
+  echo "  NETCDF_C_PATH/NETCDF_FORTRAN_PATH yourself, or check MODULE_NETCDF/MODULE_HDF5" >&2
+  echo "  actually loaded without error above." >&2
   exit 1
 fi
 if [ "${PIO_ENABLE_PNETCDF}" = "ON" ]; then
@@ -165,6 +177,7 @@ whatis("Short description : The Parallel IO libraries (PIO), built for ${PLATFOR
 
 $( [ -n "${MODULE_GCC}" ] && echo "depends_on(\"${MODULE_GCC}\")" )
 $( [ -n "${MODULE_MPI}" ] && echo "depends_on(\"${MODULE_MPI}\")" )
+$( [ -n "${MODULE_HDF5}" ] && echo "depends_on(\"${MODULE_HDF5}\")" )
 $( [ -n "${MODULE_NETCDF}" ] && echo "depends_on(\"${MODULE_NETCDF}\")" )
 $( [ "${PIO_ENABLE_PNETCDF}" = "ON" ] && [ -n "${MODULE_PNETCDF}" ] && echo "depends_on(\"${MODULE_PNETCDF}\")" )
 
