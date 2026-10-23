@@ -143,6 +143,19 @@ export ESMF_F90=$(command -v mpif90)
 [ -n "${ESMF_F90LINKLIBS}" ] && export ESMF_F90LINKLIBS
 
 make
+
+# NUOPC is NOT built by the main `make`/`make install` above -- its own
+# makefile has to be run explicitly, appending its objects into the
+# already-built $(ESMF_LIBDIR)/libesmf.a before `make install` copies
+# that library to the install prefix (confirmed directly: ESMF's own
+# top-level `install` target only copies libesmf*.*/headers, with no
+# dependency that would build src/addon/NUOPC first). Every NUOPC-based
+# consumer here -- ESMX, CMEPS, every model cap -- needs this; skipping
+# it produces a libesmf.a that links fine on its own but leaves every
+# nuopc_model/nuopc_mediator/esmf_fieldredistmod symbol undefined at the
+# final esmx_app link step.
+make -C src/addon/NUOPC
+
 make install
 
 ESMFMKFILE_PATH=${PREFIX}/lib/esmf.mk
