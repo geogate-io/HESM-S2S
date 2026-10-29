@@ -22,7 +22,8 @@ module load conduit/0.9.2
 PYTHON_ENV=$WORK/envs/hybrid-s2s
 export PATH=${PYTHON_ENV}/bin:${PATH}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PYTHON_ENV}/lib
-export PYTHONPATH=${CONDUIT_ROOT}/python-modules:${PYTHONPATH}
+export PYTHONPATH=${CONDUIT_ROOT}/python-modules:${PYTHONPATH:-}
+export PYTHONPATH=$(echo "$PYTHONPATH" | sed 's/:$//')
 export LD_LIBRARY_PATH=${TACC_HDF5_DIR}/lib:${LD_LIBRARY_PATH}
 export NETCDF_INCDIR=${TACC_PARALLELNETCDF_BIN}/include
 export NETCDF_LIBDIR=${TACC_PARALLELNETCDF_BIN}/lib64
