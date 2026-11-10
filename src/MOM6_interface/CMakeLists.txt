@@ -5,7 +5,7 @@ project(mom6 LANGUAGES Fortran)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -fbacktrace")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Waliasing -fcray-pointer -fconvert=big-endian -ffree-line-length-none -fno-range-check -fbacktrace")
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -I/glade/work/epicufsrt/contrib/spack-stack/derecho/spack-stack-1.9.2/envs/ue-gcc-12.2.0/install/gcc/12.2.0/fms-2024.02-k6pfcd2/include_r8")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -I$ENV{fms_ROOT}/include_r8")
 set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
 list(APPEND MOM6_SHARE_DEFS "CPRGNU")
 
