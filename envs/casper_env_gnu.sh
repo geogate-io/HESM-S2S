@@ -65,5 +65,8 @@ export PIO_C_INCLUDE_DIR=${PIO_C_PATH}/include
 export PIO_Fortran_LIBRARY=${PIO_Fortran_PATH}/lib
 export PIO_Fortran_INCLUDE_DIR=${PIO_Fortran_PATH}/include
 
+# set ESMF root
+export ESMF_ROOT="$(dirname "$(dirname "$(command -v ESMF_Regrid)")")"
+
 # fms_ROOT and CONDUIT_ROOT come from the fms/conduit modules loaded above.
 module li
