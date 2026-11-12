@@ -32,6 +32,22 @@
 #                    compiler/MPI/build-tool modules to load; each may be
 #                    set to "" to skip loading it (e.g. if already loaded
 #                    by the calling environment)
+#   MPICC_WRAPPER, MPICXX_WRAPPER, MPIF90_WRAPPER
+#                    the MPI compiler wrappers handed to CMake (defaults:
+#                    the bare names mpicc/mpicxx/mpif90, resolved via
+#                    PATH). PASS ABSOLUTE PATHS where a conda env is
+#                    active: `module --force purge` does NOT remove a
+#                    conda env from PATH, and a conda-forge MPICH (which
+#                    e.g. tempest-extremes pulls in) ships its own
+#                    mpicc/mpicxx/mpif90 that then shadow the system
+#                    MPI's. Conduit configures, builds and installs
+#                    perfectly against the wrong MPI -- the failure only
+#                    surfaces later, when libconduit_relay_mpi.so drags
+#                    libmpi.so.12 (MPICH) into an OpenMPI esmx_app. This
+#                    matters doubly with an external mpi4py: GeoGate's
+#                    Python plugin passes an mpi4py communicator handle
+#                    into Conduit's relay MPI, so both must be the SAME
+#                    MPI build, not merely both MPI.
 #   BUILD_DIR_ROOT  scratch root for the build (default: Casper's own)
 #
 # Usage: ./build_conduit.sh   (run on a login node or interactive session)
@@ -47,6 +63,9 @@ MODULE_NCARENV=${MODULE_NCARENV-ncarenv/25.10}
 MODULE_GCC=${MODULE_GCC-gcc/14.3.0}
 MODULE_MPI=${MODULE_MPI-openmpi/5.0.8}
 MODULE_CMAKE=${MODULE_CMAKE-cmake/3.31.8}
+MPICC_WRAPPER=${MPICC_WRAPPER:-mpicc}
+MPICXX_WRAPPER=${MPICXX_WRAPPER:-mpicxx}
+MPIF90_WRAPPER=${MPIF90_WRAPPER:-mpif90}
 BUILD_DIR_ROOT=${BUILD_DIR_ROOT:-/glade/derecho/scratch/$USER/casper_build}
 
 PREFIX=${INSTALL_ROOT}/conduit/${CONDUIT_VERSION}
@@ -91,9 +110,9 @@ rm -f /tmp/conduit_py_fallback.cmake.$$
 cmake -S src -B build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=mpicc \
-  -DCMAKE_CXX_COMPILER=mpicxx \
-  -DCMAKE_Fortran_COMPILER=mpif90 \
+  -DCMAKE_C_COMPILER="${MPICC_WRAPPER}" \
+  -DCMAKE_CXX_COMPILER="${MPICXX_WRAPPER}" \
+  -DCMAKE_Fortran_COMPILER="${MPIF90_WRAPPER}" \
   -DBUILD_SHARED_LIBS:BOOL=ON \
   -DENABLE_MPI:BOOL=ON \
   -DENABLE_FORTRAN:BOOL=ON \
