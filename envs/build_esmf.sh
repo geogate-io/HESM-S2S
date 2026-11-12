@@ -36,6 +36,16 @@
 #                    each may be set to "" to skip loading it. MODULE_PIO
 #                    needs a netcdf-fortran-enabled ParallelIO (PIO)
 #                    build -- see PIO_C_INCLUDE_DIR/PIO_C_LIBRARY below.
+#   MPICC_WRAPPER, MPICXX_WRAPPER, MPIF90_WRAPPER
+#                   the MPI compiler wrappers ESMF builds with (default:
+#                    whatever mpicc/mpicxx/mpif90 PATH resolves to after
+#                    the module loads). PASS ABSOLUTE PATHS where a conda
+#                    env is active: `module --force purge` does NOT remove
+#                    a conda env from PATH, and a conda-forge MPICH (which
+#                    e.g. tempest-extremes pulls in) ships its own
+#                    mpicc/mpicxx/mpif90. Picking those up while ESMF_COMM
+#                    still says 'openmpi' builds an ESMF whose comm layer
+#                    and wrappers disagree.
 #   BUILD_DIR_ROOT  scratch root for the build (default: Casper's own)
 #   PIO_C_INCLUDE_DIR / PIO_C_LIBRARY
 #                   ParallelIO's own include/lib dirs -- this project's
@@ -70,6 +80,9 @@ MODULE_CMAKE=${MODULE_CMAKE-cmake/3.31.8}
 MODULE_HDF5=${MODULE_HDF5-hdf5-mpi/1.14.6}
 MODULE_NETCDF=${MODULE_NETCDF-netcdf-mpi/4.9.3}
 MODULE_PIO=${MODULE_PIO-parallelio/2.6.6}
+MPICC_WRAPPER=${MPICC_WRAPPER:-mpicc}
+MPICXX_WRAPPER=${MPICXX_WRAPPER:-mpicxx}
+MPIF90_WRAPPER=${MPIF90_WRAPPER:-mpif90}
 BUILD_DIR_ROOT=${BUILD_DIR_ROOT:-/glade/derecho/scratch/$USER/casper_build}
 
 ESMF_COMM=${ESMF_COMM:-openmpi}
@@ -81,13 +94,13 @@ MODULEDIR=${INSTALL_ROOT}/modulefiles/esmf-mpi
 BUILD_DIR=${TMPDIR:-${BUILD_DIR_ROOT}}/esmf-${ESMF_RELEASE_VERSION}
 
 module --force purge
-[ -n "${MODULE_NCARENV}" ] && module load "${MODULE_NCARENV}"
-[ -n "${MODULE_GCC}" ] && module load "${MODULE_GCC}"
-[ -n "${MODULE_MPI}" ] && module load "${MODULE_MPI}"
-[ -n "${MODULE_CMAKE}" ] && module load "${MODULE_CMAKE}"
-[ -n "${MODULE_HDF5}" ] && module load "${MODULE_HDF5}"
-[ -n "${MODULE_NETCDF}" ] && module load "${MODULE_NETCDF}"
-[ -n "${MODULE_PIO}" ] && module load "${MODULE_PIO}"
+if [ -n "${MODULE_NCARENV}" ]; then module load "${MODULE_NCARENV}"; fi
+if [ -n "${MODULE_GCC}" ]; then module load "${MODULE_GCC}"; fi
+if [ -n "${MODULE_MPI}" ]; then module load "${MODULE_MPI}"; fi
+if [ -n "${MODULE_CMAKE}" ]; then module load "${MODULE_CMAKE}"; fi
+if [ -n "${MODULE_HDF5}" ]; then module load "${MODULE_HDF5}"; fi
+if [ -n "${MODULE_NETCDF}" ]; then module load "${MODULE_NETCDF}"; fi
+if [ -n "${MODULE_PIO}" ]; then module load "${MODULE_PIO}"; fi
 
 # Three ways PIO_C_INCLUDE_DIR/PIO_C_LIBRARY can already be set, tried in
 # order: (1) explicitly by the caller; (2) PIO_C_PATH, set by loading the
@@ -137,10 +150,12 @@ export ESMF_PIO=external
 export ESMF_PIO_INCLUDE=${PIO_C_INCLUDE_DIR}
 export ESMF_PIO_LIBPATH=${PIO_C_LIBRARY}
 export ESMF_SHARED_LIB_BUILD=OFF
-export ESMF_C=$(command -v mpicc)
-export ESMF_CXX=$(command -v mpicxx)
-export ESMF_F90=$(command -v mpif90)
-[ -n "${ESMF_F90LINKLIBS}" ] && export ESMF_F90LINKLIBS
+# `command -v` so a bare wrapper name still becomes the absolute path ESMF
+# records in esmf.mk; an already-absolute MPI*_WRAPPER passes through.
+export ESMF_C=$(command -v "${MPICC_WRAPPER}")
+export ESMF_CXX=$(command -v "${MPICXX_WRAPPER}")
+export ESMF_F90=$(command -v "${MPIF90_WRAPPER}")
+if [ -n "${ESMF_F90LINKLIBS}" ]; then export ESMF_F90LINKLIBS; fi
 
 make
 

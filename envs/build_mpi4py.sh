@@ -60,9 +60,9 @@ MODULEDIR=${INSTALL_ROOT}/modulefiles/mpi4py
 BUILD_DIR=${TMPDIR:-${BUILD_DIR_ROOT}}/mpi4py-${MPI4PY_VERSION}
 
 module --force purge
-[ -n "${MODULE_NCARENV}" ] && module load "${MODULE_NCARENV}"
-[ -n "${MODULE_GCC}" ] && module load "${MODULE_GCC}"
-[ -n "${MODULE_MPI}" ] && module load "${MODULE_MPI}"
+if [ -n "${MODULE_NCARENV}" ]; then module load "${MODULE_NCARENV}"; fi
+if [ -n "${MODULE_GCC}" ]; then module load "${MODULE_GCC}"; fi
+if [ -n "${MODULE_MPI}" ]; then module load "${MODULE_MPI}"; fi
 
 rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}" "${PREFIX}/python-modules"

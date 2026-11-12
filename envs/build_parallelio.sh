@@ -85,16 +85,16 @@ MODULEDIR=${INSTALL_ROOT}/modulefiles/parallelio
 BUILD_DIR=${TMPDIR:-${BUILD_DIR_ROOT}}/parallelio-${PIO_RELEASE_VERSION}
 
 module --force purge
-[ -n "${MODULE_NCARENV}" ] && module load "${MODULE_NCARENV}"
-[ -n "${MODULE_GCC}" ] && module load "${MODULE_GCC}"
-[ -n "${MODULE_MPI}" ] && module load "${MODULE_MPI}"
-[ -n "${MODULE_CMAKE}" ] && module load "${MODULE_CMAKE}"
+if [ -n "${MODULE_NCARENV}" ]; then module load "${MODULE_NCARENV}"; fi
+if [ -n "${MODULE_GCC}" ]; then module load "${MODULE_GCC}"; fi
+if [ -n "${MODULE_MPI}" ]; then module load "${MODULE_MPI}"; fi
+if [ -n "${MODULE_CMAKE}" ]; then module load "${MODULE_CMAKE}"; fi
 # netCDF's netcdf4/parallel support depends on HDF5 -- must load before
 # netcdf-mpi (NCAR's module tree is hierarchical: netcdf-mpi may not even
 # be visible/correctly initialized without hdf5-mpi loaded first, same
 # order this project's own env_gnu.sh scripts always use).
-[ -n "${MODULE_HDF5}" ] && module load "${MODULE_HDF5}"
-[ -n "${MODULE_NETCDF}" ] && module load "${MODULE_NETCDF}"
+if [ -n "${MODULE_HDF5}" ]; then module load "${MODULE_HDF5}"; fi
+if [ -n "${MODULE_NETCDF}" ]; then module load "${MODULE_NETCDF}"; fi
 if [ "${PIO_ENABLE_PNETCDF}" = "ON" ] && [ -n "${MODULE_PNETCDF}" ]; then
   module load "${MODULE_PNETCDF}"
 fi
