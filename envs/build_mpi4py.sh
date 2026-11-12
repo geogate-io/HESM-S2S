@@ -35,11 +35,16 @@
 #   MPICC_WRAPPER   the MPI C compiler wrapper name (default: mpicc --
 #                    standard across OpenMPI/MPICH/Intel MPI/MVAPICH2)
 #   BUILD_DIR_ROOT  scratch root for the build (default: Casper's own)
+#   MPI4PY_VERSION  mpi4py release to build (default 4.0.1, what Casper
+#                    and Derecho use). Vista's conda env shipped 4.1.2,
+#                    so building for Vista passes that instead -- the
+#                    version has to match whatever the embedded
+#                    interpreter is expected to import.
 #
 # Usage: ./build_mpi4py.sh   (run on a login node or interactive session)
 set -euo pipefail
 
-MPI4PY_VERSION=4.0.1
+MPI4PY_VERSION=${MPI4PY_VERSION:-4.0.1}
 
 PLATFORM_LABEL=${PLATFORM_LABEL:-Casper}
 PYTHON_ENV=${PYTHON_ENV:-/glade/work/turuncu/ML-2.0/envs/aurora}
